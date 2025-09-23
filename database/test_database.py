@@ -4,7 +4,7 @@ from models.account import Account
 from models.transaction import Transaction, TransactionEntry
 from database.database import InMemoryDatabase
 
-class TestInMemoryDatabase(unittest.TestCase):
+class TestDatabase(unittest.TestCase):
     def setUp(self):
         self.db = InMemoryDatabase()
         self.account1 = Account(id=1, name="Cash", type="debit")
