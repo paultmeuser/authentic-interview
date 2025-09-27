@@ -1,17 +1,14 @@
 from database.database import AbstractDatabase
+from database.account_dao import AccountDao
 from models.account import Account
-
-def validate_account(account: Account) -> None:
-    pass
 
 class Ledger:
 
     def __init__(self, db: AbstractDatabase):
-        self.db = db
+        self.account_dao = AccountDao(db)
 
     def add_account(self, account: Account) -> None:
-        validate_account(account)
-        self.db.add_account(account)
+        self.account_dao.add_account(account)
 
     def get_account(self, account_id: int) -> Account | None:
-        return self.db.get_account(account_id)
+        return self.account_dao.get_account(account_id)

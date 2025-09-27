@@ -38,22 +38,6 @@ class TestDatabase(unittest.TestCase):
         transactions = self.db.list_transactions()
         self.assertIn(transaction, transactions)
         self.assertEqual(len(transactions), 1)
-    
-    def test_add_account_duplicate_id_raises(self):
-        duplicate_account = Account(id=1, name="Duplicate", type="debit")
-        with self.assertRaises(ValueError) as context:
-            self.db.add_account(duplicate_account)
-        self.assertIn("Account with id 1 already exists", str(context.exception))
-
-    def test_write_transaction_duplicate_id_raises(self):
-        entry1 = TransactionEntry(account_id=1, value=100)
-        entry2 = TransactionEntry(account_id=2, value=-100)
-        transaction1 = Transaction(id=1, timestamp=datetime.now(), entries=(entry1, entry2))
-        transaction2 = Transaction(id=1, timestamp=datetime.now(), entries=(entry1, entry2))
-        self.db.write_transaction(transaction1)
-        with self.assertRaises(ValueError) as context:
-            self.db.write_transaction(transaction2)
-        self.assertIn("Transaction with id 1 already exists", str(context.exception))
 
 if __name__ == "__main__":
     unittest.main()

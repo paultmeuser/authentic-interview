@@ -35,10 +35,6 @@ class InMemoryDatabase(AbstractDatabase):
         self.transactions = []
 
     def add_account(self, account: Account) -> None:
-        if account.id in self.accounts_by_id:
-            raise ValueError(f"Account with id {account.id} already exists.")
-        if account.name in self.accounts_by_name:
-            raise ValueError(f"Account with name '{account.name}' already exists.")
         self.accounts_by_id[account.id] = account
         self.accounts_by_name[account.name] = account
 

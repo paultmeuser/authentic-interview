@@ -2,3 +2,6 @@
 *.db
 
 scratch-notes.md
+
+# ignore Python cache files
+__pycache__/
