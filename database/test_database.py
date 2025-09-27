@@ -18,6 +18,12 @@ class TestDatabase(unittest.TestCase):
         account_none = self.db.get_account(999)
         self.assertIsNone(account_none)
 
+    def test_get_account_by_name(self):
+        account = self.db.get_account_by_name("Cash")
+        self.assertEqual(account, self.account1)
+        account_none = self.db.get_account_by_name("NonExistent")
+        self.assertIsNone(account_none)
+
     def test_list_accounts(self):
         accounts = self.db.list_accounts()
         self.assertIn(self.account1, accounts)
