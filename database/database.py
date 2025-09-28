@@ -21,7 +21,7 @@ class AbstractDatabase(ABC):
         pass
 
     @abstractmethod
-    def write_transaction(self, transaction: Transaction) -> None:
+    def add_transaction(self, transaction: Transaction) -> None:
         pass
 
     @abstractmethod
@@ -51,7 +51,7 @@ class InMemoryDatabase(AbstractDatabase):
     def list_accounts(self) -> list[Account]:
         return list(self.accounts_by_id.values())
 
-    def write_transaction(self, transaction: Transaction) -> None:
+    def add_transaction(self, transaction: Transaction) -> None:
         self.transactions[transaction.id] = transaction
 
     def get_transaction(self, transaction_id: int) -> Transaction | None:
