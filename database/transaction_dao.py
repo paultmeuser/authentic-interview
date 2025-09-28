@@ -1,3 +1,4 @@
+from models.account import AccountType
 from models.transaction import Transaction
 from database.database import AbstractDatabase
 
@@ -20,9 +21,9 @@ class TransactionDao:
         for entry in transaction.entries:
             account = accounts_by_id[entry.account_id]
             match(account.type):
-                case "debit":
+                case AccountType.DEBIT:
                     debit_total += entry.value
-                case "credit":
+                case AccountType.CREDIT:
                     credit_total += entry.value
                 case _:
                     raise ValueError(f"Unknown account type '{account.type}' for account ID {account.id}.")
