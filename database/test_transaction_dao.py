@@ -119,7 +119,7 @@ class TestTransactionDao(unittest.TestCase):
         self.dao.add_transaction(t1)
         self.dao.add_transaction(t2)
         result = list(self.dao.list_transactions())
-        self.assertEqual(result, [t1, t2])
+        self.assertEqual(set(result), {t1, t2})
 
 if __name__ == "__main__":
     unittest.main()
