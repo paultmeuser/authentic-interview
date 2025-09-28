@@ -9,7 +9,7 @@ class AccountType(Enum):
     def __str__(self):
         return str(self.value)
 
-@dataclass
+@dataclass(frozen=True)
 class Account:
     id: int
     name: str
