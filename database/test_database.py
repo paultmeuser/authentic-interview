@@ -30,6 +30,20 @@ class TestDatabase(unittest.TestCase):
         self.assertIn(self.account2, accounts)
         self.assertEqual(len(accounts), 2)
 
+    def test_get_transaction(self):
+        entry1 = TransactionEntry(account_id=1, value=50)
+        entry2 = TransactionEntry(account_id=2, value=-50)
+        transaction = Transaction(id=2, timestamp=datetime.now(), entries=(entry1, entry2))
+        self.db.write_transaction(transaction)
+        fetched = self.db.get_transaction(2)
+        self.assertEqual(fetched, transaction)
+        none_fetched = self.db.get_transaction(999)
+        self.assertIsNone(none_fetched)
+
+    def test_list_transactions_empty(self):
+        transactions = self.db.list_transactions()
+        self.assertEqual(len(transactions), 0)
+
     def test_write_and_list_transactions(self):
         entry1 = TransactionEntry(account_id=1, value=100)
         entry2 = TransactionEntry(account_id=2, value=-100)

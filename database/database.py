@@ -25,6 +25,10 @@ class AbstractDatabase(ABC):
         pass
 
     @abstractmethod
+    def get_transaction(self, transaction_id: int) -> Transaction | None:
+        pass
+
+    @abstractmethod
     def list_transactions(self) -> list[Transaction]:
         pass
 
@@ -32,7 +36,7 @@ class InMemoryDatabase(AbstractDatabase):
     def __init__(self):
         self.accounts_by_id = {}
         self.accounts_by_name = {}
-        self.transactions = []
+        self.transactions = {}
 
     def add_account(self, account: Account) -> None:
         self.accounts_by_id[account.id] = account
@@ -48,9 +52,10 @@ class InMemoryDatabase(AbstractDatabase):
         return list(self.accounts_by_id.values())
 
     def write_transaction(self, transaction: Transaction) -> None:
-        if transaction.id in {t.id for t in self.transactions}:
-            raise ValueError(f"Transaction with id {transaction.id} already exists.")
-        self.transactions.append(transaction)
+        self.transactions[transaction.id] = transaction
+
+    def get_transaction(self, transaction_id: int) -> Transaction | None:
+        return self.transactions.get(transaction_id)
 
     def list_transactions(self) -> list[Transaction]:
-        return self.transactions
+        return self.transactions.values()
