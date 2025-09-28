@@ -15,3 +15,7 @@ class Transaction:
     timestamp: datetime
     entries: tuple[TransactionEntry, ...]
 
+
+    def __str__(self):
+        entries_str = ", ".join(f"(Account ID: {e.account_id}, Value: {e.value})" for e in self.entries)
+        return f"Transaction(id={self.id}, timestamp='{self.timestamp.isoformat()}', entries=[{entries_str}])"
