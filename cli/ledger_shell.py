@@ -24,9 +24,9 @@ class LedgerShell(cmd.Cmd):
         self.get_account_parser = argparse.ArgumentParser(prog="get_account", description="Get account details by ID")
         self.get_account_parser.add_argument("id", type=int, help="The unique numeric ID of the account to retrieve.")
 
-        self.get_account_balance_parser = argparse.ArgumentParser(prog="get_historic_balance", description="Get account balance as of a certain timestamp")
-        self.get_account_balance_parser.add_argument("id", type=int, help="The unique numeric ID of the account.")
-        self.get_account_balance_parser.add_argument("--timestamp", type=str, default=None, help="Optional timestamp (ISO format) to get balance as of that time. Defaults to now.")
+        self.get_historic_balance_parser = argparse.ArgumentParser(prog="get_historic_balance", description="Get account balance as of a certain timestamp")
+        self.get_historic_balance_parser.add_argument("id", type=int, help="The unique numeric ID of the account.")
+        self.get_historic_balance_parser.add_argument("--timestamp", type=str, default=None, help="Optional timestamp (ISO format) to get balance as of that time. Defaults to now.")
 
         self.add_transaction_parser = argparse.ArgumentParser(prog="add_transaction", description="Add a new transaction")
         self.add_transaction_parser.add_argument("id", type=int, help="A unique numeric ID for the transaction.")
@@ -125,7 +125,7 @@ class LedgerShell(cmd.Cmd):
     def do_get_historic_balance(self, line: str):
         """Get account balance as of a certain timestamp (defaults to now): get_account_balance <id> [--timestamp <ISO timestamp>]"""
         try:
-            parsed_args = self.get_account_balance_parser.parse_args(line.split())
+            parsed_args = self.get_historic_balance_parser.parse_args(line.split())
         except SystemExit:
             return
         
