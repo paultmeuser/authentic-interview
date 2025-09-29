@@ -39,15 +39,18 @@ class Ledger:
         account = self.get_account(account_id)
         if account is None:
             raise ValueError(f"Account with ID {account_id} does not exist.")
-    
-        balance = 0
+        return self._get_historic_balances([account], timestamp)[account_id]
+
+    def _get_historic_balances(self, account_list: list[Account], timestamp: datetime) -> dict[int , tuple[Account, int]]:
+        account_balances = {account.id: 0 for account in account_list}
         for txn in self.list_transactions():
             if txn.timestamp > timestamp:
                 continue
             for entry in txn.entries:
-                if entry.account_id == account_id:
-                    balance += entry.value
-        return account, balance
+                if entry.account_id in account_balances:
+                    account_balances[entry.account_id] += entry.value
+        return {account.id: (account, account_balances[account.id]) for account in account_list}
+    
     
     def get_account_balance(self, account_id: int) -> tuple[Account, int]:
         account = self.get_account(account_id)
