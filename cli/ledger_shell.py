@@ -1,8 +1,10 @@
 import cmd
 import argparse
+from datetime import datetime
 
 from app.ledger import Ledger
 from models.account import Account, AccountType
+from models.transaction import Transaction, TransactionEntry
 
 
 class LedgerShell(cmd.Cmd):
@@ -19,9 +21,12 @@ class LedgerShell(cmd.Cmd):
         self.add_account_parser.add_argument("type", type=AccountType, choices=[AccountType.DEBIT, AccountType.CREDIT], help="The type of the account (debit or credit).")
         self.add_account_parser.add_argument("description", type=str, nargs="*", default="", help="An optional plain text description of the account.")
 
-
         self.get_account_parser = argparse.ArgumentParser(prog="get_account", description="Get account details by ID")
         self.get_account_parser.add_argument("id", type=int, help="The unique numeric ID of the account to retrieve.")
+
+        self.get_account_balance_parser = argparse.ArgumentParser(prog="get_account_balance", description="Get account balance as of a certain timestamp")
+        self.get_account_balance_parser.add_argument("id", type=int, help="The unique numeric ID of the account to retrieve the balance for.")
+        self.get_account_balance_parser.add_argument("--timestamp", type=str, default=None, help="Optional timestamp (ISO format) to get balance as of that time")
 
         self.add_transaction_parser = argparse.ArgumentParser(prog="add_transaction", description="Add a new transaction")
         self.add_transaction_parser.add_argument("id", type=int, help="A unique numeric ID for the transaction.")
@@ -33,8 +38,6 @@ class LedgerShell(cmd.Cmd):
 
     def do_add_transaction(self, line: str):
         """Add a new transaction: add_transaction <id> <account_id:value> [<account_id:value> ...]"""
-        from datetime import datetime
-        from models.transaction import Transaction, TransactionEntry
         try:
             parsed_args = self.add_transaction_parser.parse_args(line.split())
         except SystemExit:
@@ -119,8 +122,24 @@ class LedgerShell(cmd.Cmd):
         else:
             print(account)
 
+    def do_get_account_balance(self, line: str):
+        """Get account balance as of a certain timestamp (defaults to now): get_account_balance <id> [--timestamp <ISO timestamp>]"""
+        try:
+            parsed_args = self.get_account_balance_parser.parse_args(line.split())
+        except SystemExit:
+            return
+        
+        txn_timestamp = datetime.now()
+        if parsed_args.timestamp:
+            try:
+                txn_timestamp = datetime.fromisoformat(parsed_args.timestamp)
+            except ValueError as e:
+                print(f"Invalid timestamp: {e}")
+                return
+        account, balance = self.ledger.get_account_balance(parsed_args.id, txn_timestamp)
+        print(f"ID: {account.id} Account: {account.name} type: {account.type} balance as of {txn_timestamp.isoformat()}: {balance}")
 
-    def do_exit(self, line: str):
+    def do_exit(self, _: str):
         """Exit the Ledger shell."""
         print("Exiting...")
         return True
