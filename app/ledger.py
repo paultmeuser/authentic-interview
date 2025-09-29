@@ -5,6 +5,7 @@ from database.database import AbstractDatabase
 from database.account_dao import AccountDao
 from database.transaction_dao import TransactionDao
 from models.account import Account
+from models.report import TrialBalanceReport, ReportEntry
 from models.transaction import Transaction
 
 class Ledger:
@@ -53,3 +54,7 @@ class Ledger:
         if account is None:
             raise ValueError(f"Account with ID {account_id} does not exist.")
         return account, self.running_balance_cache[account_id]
+    
+    def get_trial_balance_report(self, timestamp: datetime) -> TrialBalanceReport:
+        pass
+        

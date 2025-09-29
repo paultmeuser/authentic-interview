@@ -1,15 +1,19 @@
 from dataclasses import dataclass
-from account import Account
+from datetime import datetime
 
-# Immutable dataclasses for representing a financial transaction
+from models.account import Account
+
+# Immutable dataclasses for representing a report
 
 @dataclass(frozen=True)
 class ReportEntry:
-    account: Account
-    total_value: int  # Value in smallest currency unit (e.g., cents)
-    
+    account_name: str
+    total_value: int
 
 @dataclass(frozen=True)
-class Report:
-    id: int
-    entries: tuple[ReportEntry, ...]
+class TrialBalanceReport:
+    timestamp: datetime
+    debits: tuple[ReportEntry]
+    debits_total: int
+    credits: tuple[ReportEntry]
+    credits_total: int
