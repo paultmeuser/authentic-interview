@@ -4,7 +4,7 @@ from collections import defaultdict
 from database.database import AbstractDatabase
 from database.account_dao import AccountDao
 from database.transaction_dao import TransactionDao
-from models.account import Account
+from models.account import Account, AccountType
 from models.report import TrialBalanceReport, ReportEntry
 from models.transaction import Transaction
 
@@ -39,9 +39,9 @@ class Ledger:
         account = self.get_account(account_id)
         if account is None:
             raise ValueError(f"Account with ID {account_id} does not exist.")
-        return self._get_historic_balances([account], timestamp)[account_id]
+        return self._get_historic_balances([account], timestamp)[0]
 
-    def _get_historic_balances(self, account_list: list[Account], timestamp: datetime) -> dict[int , tuple[Account, int]]:
+    def _get_historic_balances(self, account_list: list[Account], timestamp: datetime) -> list[tuple[Account, int]]:
         account_balances = {account.id: 0 for account in account_list}
         for txn in self.list_transactions():
             if txn.timestamp > timestamp:
@@ -49,7 +49,7 @@ class Ledger:
             for entry in txn.entries:
                 if entry.account_id in account_balances:
                     account_balances[entry.account_id] += entry.value
-        return {account.id: (account, account_balances[account.id]) for account in account_list}
+        return [(account, account_balances[account.id]) for account in account_list]
     
     
     def get_account_balance(self, account_id: int) -> tuple[Account, int]:
@@ -59,5 +59,11 @@ class Ledger:
         return account, self.running_balance_cache[account_id]
     
     def get_trial_balance_report(self, timestamp: datetime) -> TrialBalanceReport:
-        pass
+        accounts = self.account_dao.list_accounts()
+        account_balances = self._get_historic_balances(accounts, timestamp)
+        debit_entries = [ReportEntry(account_name=account.name, balance=balance) for account, balance in account_balances if account.type == AccountType.DEBIT]
+        debits_total = sum(entry.balance for entry in debit_entries)
+        credit_entries = [ReportEntry(account_name=account.name, balance=balance) for account, balance in account_balances if account.type == AccountType.CREDIT]
+        credits_total = sum(entry.balance for entry in credit_entries)
+        return TrialBalanceReport(timestamp=timestamp, debits=debit_entries, debits_total=debits_total, credits=credit_entries, credits_total=credits_total)
         

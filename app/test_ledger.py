@@ -145,3 +145,46 @@ class TestLedger(unittest.TestCase):
         self.ledger.add_transaction(txn3)
         _, balance = self.ledger.get_account_balance(1)
         self.assertEqual(balance, 1300)
+
+
+    def test_get_trial_balance_report(self):
+        acc1 = Account(id=1, name="Cash", type="debit")
+        acc2 = Account(id=2, name="Revenue", type="credit")
+        acc3 = Account(id=3, name="Bank", type="debit")
+        acc4 = Account(id=4, name="Sales", type="credit")
+        self.ledger.add_account(acc1)
+        self.ledger.add_account(acc2)
+        self.ledger.add_account(acc3)
+        self.ledger.add_account(acc4)
+        entries1 = (
+            TransactionEntry(account_id=1, value=1000),
+            TransactionEntry(account_id=2, value=1000),
+            TransactionEntry(account_id=3, value=2000),
+            TransactionEntry(account_id=4, value=2000),
+        )
+        txn1 = Transaction(id=1, timestamp=datetime(2024, 1, 1, 12, 0, 0), entries=entries1)
+        self.ledger.add_transaction(txn1)
+        entries2 = (
+            TransactionEntry(account_id=1, value=500),
+            TransactionEntry(account_id=2, value=500),
+            TransactionEntry(account_id=3, value=1000),
+            TransactionEntry(account_id=4, value=1000),
+        )
+        txn2 = Transaction(id=2, timestamp=datetime(2024, 6, 1, 12, 0, 0), entries=entries2)
+        self.ledger.add_transaction(txn2)
+        report = self.ledger.get_trial_balance_report(datetime(2024, 12, 31))
+        debits = list(report.debits)
+        credits = list(report.credits)
+        self.assertEqual(len(debits), 2)
+        self.assertEqual(len(credits), 2)
+        # Check names and balances
+        debit_dict = {entry.account_name: entry.balance for entry in debits}
+        credit_dict = {entry.account_name: entry.balance for entry in credits}
+        self.assertEqual(debit_dict["Cash"], 1500)
+        self.assertEqual(debit_dict["Bank"], 3000)
+        self.assertEqual(credit_dict["Revenue"], 1500)
+        self.assertEqual(credit_dict["Sales"], 3000)
+        self.assertEqual(report.debits_total, 1500 + 3000)
+        self.assertEqual(report.credits_total, 1500 + 3000)
+
+
