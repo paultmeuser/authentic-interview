@@ -31,6 +31,9 @@ class LedgerShell(cmd.Cmd):
         self.get_account_balance_parser = argparse.ArgumentParser(prog="get_account_balance", description="Get current account balance")
         self.get_account_balance_parser.add_argument("id", type=int, help="The unique numeric ID of the account.")
 
+        self.get_trial_balance_report_parser = argparse.ArgumentParser(prog="get_trial_balance_report", description="Get trial balance report as of a certain timestamp")
+        self.get_trial_balance_report_parser.add_argument("--timestamp", type=str, default=None, help="Optional timestamp (ISO format) to get report as of that time. Defaults to now.")
+
         self.add_transaction_parser = argparse.ArgumentParser(prog="add_transaction", description="Add a new transaction")
         self.add_transaction_parser.add_argument("id", type=int, help="A unique numeric ID for the transaction.")
         self.add_transaction_parser.add_argument("entries", type=str, nargs='+', help="Entries in the format <account_id>:<value> ...")
@@ -151,6 +154,23 @@ class LedgerShell(cmd.Cmd):
         
         account, balance = self.ledger.get_account_balance(parsed_args.id)
         print(f"ID: {account.id} Account: {account.name} type: {account.type} current balance: {balance}")
+
+    def do_get_trial_balance_report(self, line: str):
+        """Get trial balance report as of a certain timestamp (defaults to now): get_trial_balance_report [--timestamp <ISO timestamp>]"""
+        try:
+            parsed_args = self.get_trial_balance_report_parser.parse_args(line.split())
+        except SystemExit:
+            return
+        
+        report_timestamp = datetime.now()
+        if parsed_args.timestamp:
+            try:
+                report_timestamp = datetime.fromisoformat(parsed_args.timestamp)
+            except ValueError as e:
+                print(f"Invalid timestamp: {e}")
+                return
+        report = self.ledger.get_trial_balance_report(report_timestamp)
+        print(report.table_str())
 
     def do_exit(self, _: str):
         """Exit the Ledger shell."""

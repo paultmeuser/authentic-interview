@@ -61,9 +61,9 @@ class Ledger:
     def get_trial_balance_report(self, timestamp: datetime) -> TrialBalanceReport:
         accounts = self.account_dao.list_accounts()
         account_balances = self._get_historic_balances(accounts, timestamp)
-        debit_entries = [ReportEntry(account_name=account.name, balance=balance) for account, balance in account_balances if account.type == AccountType.DEBIT]
+        debit_entries = [ReportEntry(account=account, balance=balance) for account, balance in account_balances if account.type == AccountType.DEBIT]
         debits_total = sum(entry.balance for entry in debit_entries)
-        credit_entries = [ReportEntry(account_name=account.name, balance=balance) for account, balance in account_balances if account.type == AccountType.CREDIT]
+        credit_entries = [ReportEntry(account=account, balance=balance) for account, balance in account_balances if account.type == AccountType.CREDIT]
         credits_total = sum(entry.balance for entry in credit_entries)
         return TrialBalanceReport(timestamp=timestamp, debits=debit_entries, debits_total=debits_total, credits=credit_entries, credits_total=credits_total)
         

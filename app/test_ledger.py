@@ -178,8 +178,8 @@ class TestLedger(unittest.TestCase):
         self.assertEqual(len(debits), 2)
         self.assertEqual(len(credits), 2)
         # Check names and balances
-        debit_dict = {entry.account_name: entry.balance for entry in debits}
-        credit_dict = {entry.account_name: entry.balance for entry in credits}
+        debit_dict = {entry.account.name: entry.balance for entry in debits}
+        credit_dict = {entry.account.name: entry.balance for entry in credits}
         self.assertEqual(debit_dict["Cash"], 1500)
         self.assertEqual(debit_dict["Bank"], 3000)
         self.assertEqual(credit_dict["Revenue"], 1500)
