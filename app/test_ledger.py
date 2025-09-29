@@ -83,6 +83,8 @@ class TestLedger(unittest.TestCase):
         self.assertIn(txn2, txns)
         self.assertEqual(len(txns), 2)
 
+    
+
     def test_get_historic_balance(self):
         acc1 = Account(id=1, name="Cash", type="debit")
         acc2 = Account(id=2, name="Revenue", type="credit")
@@ -186,5 +188,35 @@ class TestLedger(unittest.TestCase):
         self.assertEqual(credit_dict["Sales"], 3000)
         self.assertEqual(report.debits_total, 1500 + 3000)
         self.assertEqual(report.credits_total, 1500 + 3000)
+
+    def test_get_transaction_report(self):
+        acc1 = Account(id=1, name="Cash", type="debit")
+        acc2 = Account(id=2, name="Revenue", type="credit")
+        self.ledger.add_account(acc1)
+        self.ledger.add_account(acc2)
+        entries1 = (
+            TransactionEntry(account_id=1, value=1000),
+            TransactionEntry(account_id=2, value=1000),
+        )
+        txn1 = Transaction(id=1, timestamp=datetime(2024, 1, 1, 12, 0, 0), entries=entries1)
+        self.ledger.add_transaction(txn1)
+        entries2 = (
+            TransactionEntry(account_id=1, value=500),
+            TransactionEntry(account_id=2, value=500),
+        )
+        txn2 = Transaction(id=2, timestamp=datetime(2024, 6, 1, 12, 0, 0), entries=entries2)
+        self.ledger.add_transaction(txn2)
+        # Only txn1 should be included for timestamp before txn2
+        report = self.ledger.get_transaction_report(datetime(2024, 3, 1))
+        self.assertEqual(report.timestamp, datetime(2024, 3, 1))
+        self.assertIn(acc1, report.accounts)
+        self.assertIn(acc2, report.accounts)
+        self.assertEqual(len(report.transactions), 1)
+        self.assertEqual(report.transactions[0], txn1)
+        # Both transactions should be included for later timestamp
+        report2 = self.ledger.get_transaction_report(datetime(2024, 12, 31))
+        self.assertEqual(len(report2.transactions), 2)
+        self.assertIn(txn1, report2.transactions)
+        self.assertIn(txn2, report2.transactions)
 
 

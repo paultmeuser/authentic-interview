@@ -34,6 +34,9 @@ class LedgerShell(cmd.Cmd):
         self.get_trial_balance_report_parser = argparse.ArgumentParser(prog="get_trial_balance_report", description="Get trial balance report as of a certain timestamp")
         self.get_trial_balance_report_parser.add_argument("--timestamp", type=str, default=None, help="Optional timestamp (ISO format) to get report as of that time. Defaults to now.")
 
+        self.get_transaction_report_parser = argparse.ArgumentParser(prog="get_transaction_report", description="Get transaction report as of a certain timestamp")
+        self.get_transaction_report_parser.add_argument("--timestamp", type=str, default=None, help="Optional timestamp (ISO format) to get report as of that time. Defaults to now.")
+
         self.add_transaction_parser = argparse.ArgumentParser(prog="add_transaction", description="Add a new transaction")
         self.add_transaction_parser.add_argument("id", type=int, help="A unique numeric ID for the transaction.")
         self.add_transaction_parser.add_argument("entries", type=str, nargs='+', help="Entries in the format <account_id>:<value> ...")
@@ -89,14 +92,22 @@ class LedgerShell(cmd.Cmd):
         for txn in txns:
             print(txn)
 
-    def help_add_transaction(self):
-        print(self.add_transaction_parser.format_help())
-
-    def help_get_transaction(self):
-        print(self.get_transaction_parser.format_help())
-
-    def help_list_transactions(self):
-        print("List all transactions.")
+    def do_get_transaction_report(self, line: str):
+        """Get transaction report as of a certain timestamp (defaults to now): get_transaction_report [--timestamp <ISO timestamp>]"""
+        try:
+            parsed_args = self.get_transaction_report_parser.parse_args(line.split())
+        except SystemExit:
+            return
+        
+        report_timestamp = datetime.now()
+        if parsed_args.timestamp:
+            try:
+                report_timestamp = datetime.fromisoformat(parsed_args.timestamp)
+            except ValueError as e:
+                print(f"Invalid timestamp: {e}")
+                return
+        report = self.ledger.get_transaction_report(report_timestamp)
+        print(report.table_str())
 
     def do_add_account(self, line: str):
         """Add a new account to the ledger: add_account <id> <name> <type> [<description>]"""
@@ -185,3 +196,24 @@ class LedgerShell(cmd.Cmd):
 
     def help_exit(self):
         print("Exit the Ledger shell.")
+
+    def help_add_transaction(self):
+        print(self.add_transaction_parser.format_help())
+
+    def help_get_transaction(self):
+        print(self.get_transaction_parser.format_help())
+
+    def help_list_transactions(self):
+        print("List all transactions.")
+
+    def help_get_historic_balance(self):
+        print(self.get_historic_balance_parser.format_help())
+
+    def help_get_account_balance(self):
+        print(self.get_account_balance_parser.format_help())
+
+    def help_get_trial_balance_report(self):
+        print(self.get_trial_balance_report_parser.format_help())
+
+    def help_get_transaction_report(self):
+        print(self.get_transaction_report_parser.format_help())

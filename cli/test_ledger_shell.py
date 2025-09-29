@@ -4,7 +4,7 @@ from io import StringIO
 from parameterized import parameterized
 from cli.ledger_shell import LedgerShell
 from models.account import Account, AccountType
-from models.report import TrialBalanceReport
+from models.report import TrialBalanceReport, TransactionReport
 from models.transaction import Transaction, TransactionEntry
 from datetime import datetime
 
@@ -104,3 +104,10 @@ class TestLedgerShell(TestCase):
         with mock.patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             self.shell.do_get_trial_balance_report("--timestamp 2025-09-28T12:00:00")
             self.mock_ledger.get_trial_balance_report.assert_called_once_with(datetime.fromisoformat("2025-09-28T12:00:00"))
+
+    def test_get_transaction_report(self):
+        empty_report = TransactionReport(timestamp=datetime.now(), accounts=[], transactions=[])
+        self.mock_ledger.get_transaction_report.return_value = empty_report
+        with mock.patch('sys.stdout', new_callable=StringIO) as mock_stdout:
+            self.shell.do_get_transaction_report("--timestamp 2025-09-28T12:00:00")
+            self.mock_ledger.get_transaction_report.assert_called_once_with(datetime.fromisoformat("2025-09-28T12:00:00"))

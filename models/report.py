@@ -2,7 +2,8 @@ from dataclasses import dataclass
 from datetime import datetime
 from prettytable import PrettyTable
 
-from models.account import Account
+from models.account import Account, AccountType
+from models.transaction import Transaction
 
 # Immutable dataclasses for representing a report
 
@@ -46,3 +47,24 @@ class TrialBalanceReport:
         )
         table.add_row(["", "Total Credits", "", self.credits_total], divider=True)
         return table.get_string(title=f"Trial Balance Report as of {self.timestamp.isoformat()}")
+
+@dataclass(frozen=True)
+class TransactionReport:
+    timestamp: datetime
+    accounts: list[Account]
+    transactions: list[Transaction]
+
+    def table_str(self) -> str:
+        debit_accounts = sorted([account for account in self.accounts if account.type == AccountType.DEBIT], key=lambda a: a.id)
+        credit_accounts = sorted([account for account in self.accounts if account.type == AccountType.CREDIT], key=lambda a: a.id)
+        sorted_accounts = debit_accounts + credit_accounts
+        sorted_account_ids = [account.id for account in sorted_accounts]
+        table = PrettyTable()
+        table.field_names = ["Transaction ID", "Timestamp"] + [a.name for a in sorted_accounts]
+        for txn in sorted(self.transactions, key=lambda t: t.timestamp):
+            row = [txn.id, txn.timestamp.isoformat()]
+            account_values = {entry.account_id: entry.value for entry in txn.entries}
+            value_list = [account_values.get(account_id, 0) for account_id in sorted_account_ids]
+            row += value_list
+            table.add_row(row)
+        return table.get_string(title=f"Transaction Report as of {self.timestamp.isoformat()}")

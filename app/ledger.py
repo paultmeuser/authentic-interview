@@ -5,7 +5,7 @@ from database.database import AbstractDatabase
 from database.account_dao import AccountDao
 from database.transaction_dao import TransactionDao
 from models.account import Account, AccountType
-from models.report import TrialBalanceReport, ReportEntry
+from models.report import TransactionReport, TrialBalanceReport, ReportEntry
 from models.transaction import Transaction
 
 class Ledger:
@@ -34,6 +34,11 @@ class Ledger:
     
     def list_transactions(self) -> list[Transaction]:
         return self.transaction_dao.list_transactions()
+    
+    def get_transaction_report(self, timestamp: datetime) -> TransactionReport:
+        accounts = self.account_dao.list_accounts()
+        transactions = [txn for txn in self.list_transactions() if txn.timestamp <= timestamp]
+        return TransactionReport(timestamp=timestamp, accounts=accounts, transactions=transactions)
 
     def get_historic_balance(self, account_id: int, timestamp: datetime) -> tuple[Account, int]:
         account = self.get_account(account_id)
