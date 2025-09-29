@@ -19,9 +19,75 @@ class LedgerShell(cmd.Cmd):
         self.add_account_parser.add_argument("type", type=AccountType, choices=[AccountType.DEBIT, AccountType.CREDIT], help="The type of the account (debit or credit).")
         self.add_account_parser.add_argument("description", type=str, nargs="*", default="", help="An optional plain text description of the account.")
 
+
         self.get_account_parser = argparse.ArgumentParser(prog="get_account", description="Get account details by ID")
         self.get_account_parser.add_argument("id", type=int, help="The unique numeric ID of the account to retrieve.")
 
+        self.add_transaction_parser = argparse.ArgumentParser(prog="add_transaction", description="Add a new transaction")
+        self.add_transaction_parser.add_argument("id", type=int, help="A unique numeric ID for the transaction.")
+        self.add_transaction_parser.add_argument("entries", type=str, nargs='+', help="Entries in the format <account_id>:<value> ...")
+        self.add_transaction_parser.add_argument("--timestamp", type=str, default=None, help="Optional transaction timestamp (ISO format)")
+
+        self.get_transaction_parser = argparse.ArgumentParser(prog="get_transaction", description="Get transaction details by ID")
+        self.get_transaction_parser.add_argument("id", type=int, help="The unique numeric ID of the transaction to retrieve.")
+
+    def do_add_transaction(self, line: str):
+        """Add a new transaction: add_transaction <id> <account_id:value> [<account_id:value> ...]"""
+        from datetime import datetime
+        from models.transaction import Transaction, TransactionEntry
+        try:
+            parsed_args = self.add_transaction_parser.parse_args(line.split())
+        except SystemExit:
+            return
+        entries = []
+        for entry_str in parsed_args.entries:
+            try:
+                account_id_str, value_str = entry_str.split(":")
+                account_id = int(account_id_str)
+                value = int(value_str)
+                entries.append(TransactionEntry(account_id=account_id, value=value))
+            except ValueError:
+                print(f"Invalid entry format: '{entry_str}'. Expected <account_id>:<value>.")
+                return
+        txn_timestamp = datetime.now()
+        if parsed_args.timestamp:
+            try:
+                txn_timestamp = datetime.fromisoformat(parsed_args.timestamp)
+            except ValueError as e:
+                print(f"Invalid timestamp: {e}")
+                return
+        txn = Transaction(id=parsed_args.id, timestamp=txn_timestamp, entries=tuple(entries))
+        try:
+            self.ledger.add_transaction(txn)
+        except ValueError as e:
+            print(f"Invalid Input: {e}")
+
+    def do_get_transaction(self, line: str):
+        """Get transaction details by ID: get_transaction <id>"""
+        try:
+            parsed_args = self.get_transaction_parser.parse_args(line.split())
+        except SystemExit:
+            return
+        txn = self.ledger.get_transaction(parsed_args.id)
+        if txn is None:
+            print(f"Transaction with id {parsed_args.id} does not exist.")
+        else:
+            print(txn)
+
+    def do_list_transactions(self, line: str):
+        """List all transactions: list_transactions"""
+        txns = self.ledger.list_transactions()
+        for txn in txns:
+            print(txn)
+
+    def help_add_transaction(self):
+        print(self.add_transaction_parser.format_help())
+
+    def help_get_transaction(self):
+        print(self.get_transaction_parser.format_help())
+
+    def help_list_transactions(self):
+        print("List all transactions.")
 
     def do_add_account(self, line: str):
         """Add a new account to the ledger: add_account <id> <name> <type> [<description>]"""
