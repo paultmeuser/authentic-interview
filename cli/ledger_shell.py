@@ -28,6 +28,9 @@ class LedgerShell(cmd.Cmd):
         self.get_historic_balance_parser.add_argument("id", type=int, help="The unique numeric ID of the account.")
         self.get_historic_balance_parser.add_argument("--timestamp", type=str, default=None, help="Optional timestamp (ISO format) to get balance as of that time. Defaults to now.")
 
+        self.get_account_balance_parser = argparse.ArgumentParser(prog="get_account_balance", description="Get current account balance")
+        self.get_account_balance_parser.add_argument("id", type=int, help="The unique numeric ID of the account.")
+
         self.add_transaction_parser = argparse.ArgumentParser(prog="add_transaction", description="Add a new transaction")
         self.add_transaction_parser.add_argument("id", type=int, help="A unique numeric ID for the transaction.")
         self.add_transaction_parser.add_argument("entries", type=str, nargs='+', help="Entries in the format <account_id>:<value> ...")
@@ -138,6 +141,16 @@ class LedgerShell(cmd.Cmd):
                 return
         account, balance = self.ledger.get_historic_balance(parsed_args.id, txn_timestamp)
         print(f"ID: {account.id} Account: {account.name} type: {account.type} balance as of {txn_timestamp.isoformat()}: {balance}")
+
+    def do_get_account_balance(self, line: str):
+        """Get current account balance: get_account_balance <id>"""
+        try:
+            parsed_args = self.get_account_balance_parser.parse_args(line.split())
+        except SystemExit:
+            return
+        
+        account, balance = self.ledger.get_account_balance(parsed_args.id)
+        print(f"ID: {account.id} Account: {account.name} type: {account.type} current balance: {balance}")
 
     def do_exit(self, _: str):
         """Exit the Ledger shell."""

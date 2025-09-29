@@ -88,3 +88,11 @@ class TestLedgerShell(TestCase):
         with mock.patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             self.shell.do_get_historic_balance("1 --timestamp 2025-09-28T12:00:00")
             self.mock_ledger.get_historic_balance.assert_called_once_with(1, datetime.fromisoformat("2025-09-28T12:00:00"))
+
+    def test_get_account_balance(self):
+        account = Account(id=1, name="Cash", type=AccountType.DEBIT, description="")
+        balance = 1000
+        self.mock_ledger.get_account_balance.return_value = (account, balance)
+        with mock.patch('sys.stdout', new_callable=StringIO) as mock_stdout:
+            self.shell.do_get_account_balance("1")
+            self.mock_ledger.get_account_balance.assert_called_once_with(1)
