@@ -122,7 +122,7 @@ class LedgerShell(cmd.Cmd):
         else:
             print(account)
 
-    def do_get_account_balance(self, line: str):
+    def do_get_historic_balance(self, line: str):
         """Get account balance as of a certain timestamp (defaults to now): get_account_balance <id> [--timestamp <ISO timestamp>]"""
         try:
             parsed_args = self.get_account_balance_parser.parse_args(line.split())

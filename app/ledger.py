@@ -48,7 +48,7 @@ class Ledger:
                     balance += entry.value
         return account, balance
     
-    def get_current_account_balance(self, account_id: int) -> tuple[Account, int]:
+    def get_account_balance(self, account_id: int) -> tuple[Account, int]:
         account = self.get_account(account_id)
         if account is None:
             raise ValueError(f"Account with ID {account_id} does not exist.")
