@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from database.database import AbstractDatabase
 from database.account_dao import AccountDao
 from database.transaction_dao import TransactionDao
@@ -24,3 +26,17 @@ class Ledger:
     
     def list_transactions(self) -> list[Transaction]:
         return self.transaction_dao.list_transactions()
+
+    def get_account_balance(self, account_id: int, timestamp: datetime) -> tuple[Account, int]:
+        account = self.get_account(account_id)
+        if account is None:
+            raise ValueError(f"Account with ID {account_id} does not exist.")
+    
+        balance = 0
+        for txn in self.list_transactions():
+            if txn.timestamp > timestamp:
+                continue
+            for entry in txn.entries:
+                if entry.account_id == account_id:
+                    balance += entry.value
+        return account, balance

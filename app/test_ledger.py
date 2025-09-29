@@ -82,3 +82,33 @@ class TestLedger(unittest.TestCase):
         self.assertIn(txn1, txns)
         self.assertIn(txn2, txns)
         self.assertEqual(len(txns), 2)
+
+    def test_get_account_balance(self):
+        acc1 = Account(id=1, name="Cash", type="debit")
+        acc2 = Account(id=2, name="Revenue", type="credit")
+        self.ledger.add_account(acc1)
+        self.ledger.add_account(acc2)
+        entries1 = (
+            TransactionEntry(account_id=1, value=1000),
+            TransactionEntry(account_id=2, value=1000),
+        )
+        txn1 = Transaction(id=1, timestamp=datetime(2024, 1, 1, 12, 0, 0), entries=entries1)
+        self.ledger.add_transaction(txn1)
+        entries2 = (
+            TransactionEntry(account_id=1, value=500),
+            TransactionEntry(account_id=2, value=500),
+        )
+        txn2 = Transaction(id=2, timestamp=datetime(2024, 6, 1, 12, 0, 0), entries=entries2)
+        self.ledger.add_transaction(txn2)
+        account, balance = self.ledger.get_account_balance(1, datetime(2024, 12, 31))
+        self.assertEqual(account, acc1)
+        self.assertEqual(balance, 1500)
+        account, balance = self.ledger.get_account_balance(2, datetime(2024, 12, 31))
+        self.assertEqual(account, acc2)
+        self.assertEqual(balance, 1500)
+        account, balance = self.ledger.get_account_balance(1, datetime(2024, 3, 1))
+        self.assertEqual(account, acc1)
+        self.assertEqual(balance, 1000)
+        account, balance = self.ledger.get_account_balance(2, datetime(2024, 3, 1))
+        self.assertEqual(account, acc2)
+        self.assertEqual(balance, 1000)
