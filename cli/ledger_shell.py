@@ -24,9 +24,9 @@ class LedgerShell(cmd.Cmd):
         self.get_account_parser = argparse.ArgumentParser(prog="get_account", description="Get account details by ID")
         self.get_account_parser.add_argument("id", type=int, help="The unique numeric ID of the account to retrieve.")
 
-        self.get_account_balance_parser = argparse.ArgumentParser(prog="get_account_balance", description="Get account balance as of a certain timestamp")
-        self.get_account_balance_parser.add_argument("id", type=int, help="The unique numeric ID of the account to retrieve the balance for.")
-        self.get_account_balance_parser.add_argument("--timestamp", type=str, default=None, help="Optional timestamp (ISO format) to get balance as of that time")
+        self.get_account_balance_parser = argparse.ArgumentParser(prog="get_historic_balance", description="Get account balance as of a certain timestamp")
+        self.get_account_balance_parser.add_argument("id", type=int, help="The unique numeric ID of the account.")
+        self.get_account_balance_parser.add_argument("--timestamp", type=str, default=None, help="Optional timestamp (ISO format) to get balance as of that time. Defaults to now.")
 
         self.add_transaction_parser = argparse.ArgumentParser(prog="add_transaction", description="Add a new transaction")
         self.add_transaction_parser.add_argument("id", type=int, help="A unique numeric ID for the transaction.")
@@ -136,7 +136,7 @@ class LedgerShell(cmd.Cmd):
             except ValueError as e:
                 print(f"Invalid timestamp: {e}")
                 return
-        account, balance = self.ledger.get_account_balance(parsed_args.id, txn_timestamp)
+        account, balance = self.ledger.get_historic_balance(parsed_args.id, txn_timestamp)
         print(f"ID: {account.id} Account: {account.name} type: {account.type} balance as of {txn_timestamp.isoformat()}: {balance}")
 
     def do_exit(self, _: str):
